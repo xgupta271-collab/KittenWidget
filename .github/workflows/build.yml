@@ -1,22 +1,32 @@
-name: Build APK
+name: Build CuteNest APK
+
 on:
   push:
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.9
-      - name: Create project files
+          gradle-version: '8.9'
+
+      - name: Create Android project
         run: |
-          mkdir -p app/src/main/res/values app/src/main/res/drawable app/src/main/res/layout app/src/main/res/xml app/src/main/res/mipmap-anydpi-v26 app/src/main/java/com/kitten/widget
+          mkdir -p app/src/main/java/com/kitten/widget
+          mkdir -p app/src/main/res/values
 
           cat > settings.gradle.kts <<'EOF'
           pluginManagement {
@@ -32,7 +42,7 @@ jobs:
                   mavenCentral()
               }
           }
-          rootProject.name = "KittenWidget"
+          rootProject.name = "CuteNest"
           include(":app")
           EOF
 
@@ -53,20 +63,24 @@ jobs:
               id("com.android.application")
               id("org.jetbrains.kotlin.android")
           }
+
           android {
               namespace = "com.kitten.widget"
               compileSdk = 34
+
               defaultConfig {
                   applicationId = "com.kitten.widget"
                   minSdk = 26
                   targetSdk = 34
-                  versionCode = 1
-                  versionName = "1.0"
+                  versionCode = 2
+                  versionName = "1.1"
               }
+
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
                   targetCompatibility = JavaVersion.VERSION_17
               }
+
               kotlinOptions {
                   jvmTarget = "17"
               }
@@ -76,185 +90,25 @@ jobs:
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-permission
+                  android:name="android.permission.SET_WALLPAPER" />
+
               <application
-                  android:label="@string/app_name"
-                  android:icon="@mipmap/ic_launcher"
-                  android:roundIcon="@mipmap/ic_launcher_round"
-                  android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar">
+                  android:allowBackup="true"
+                  android:label="CuteNest"
+                  android:theme="@android:style/Theme.Material.Light.NoActionBar">
+
                   <activity
                       android:name=".MainActivity"
                       android:exported="true">
+
                       <intent-filter>
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.LAUNCHER" />
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
                       </intent-filter>
+
                   </activity>
-                  <receiver
-                      android:name=".KittenWidgetProvider"
-                      android:exported="true">
-                      <intent-filter>
-                          <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                      </intent-filter>
-                      <meta-data
-                          android:name="android.appwidget.provider"
-                          android:resource="@xml/kitten_widget_info" />
-                  </receiver>
               </application>
           </manifest>
           EOF
-
-          cat > app/src/main/res/values/strings.xml <<'EOF'
-          <resources>
-              <string name="app_name">Kitten Widget</string>
-          </resources>
-          EOF
-
-          cat > app/src/main/res/values/colors.xml <<'EOF'
-          <resources>
-              <color name="ic_bg">#FFB6C8</color>
-          </resources>
-          EOF
-
-          cat > app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@color/ic_bg" />
-              <foreground android:drawable="@drawable/ic_launcher_foreground" />
-          </adaptive-icon>
-          EOF
-
-          cp app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-
-          cat > app/src/main/res/drawable/ic_launcher_foreground.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="108dp"
-              android:height="108dp"
-              android:viewportWidth="108"
-              android:viewportHeight="108">
-              <path android:fillColor="#FFFFFF" android:pathData="M34,50 L35,28 L51,39 Z" />
-              <path android:fillColor="#FFFFFF" android:pathData="M74,50 L73,28 L57,39 Z" />
-              <path android:fillColor="#FF8FAB" android:pathData="M38,44 L38.5,34 L46,39 Z" />
-              <path android:fillColor="#FF8FAB" android:pathData="M70,44 L69.5,34 L62,39 Z" />
-              <path android:fillColor="#FFFFFF" android:pathData="M32,58 a22,20 0 1,0 44,0 a22,20 0 1,0 -44,0 Z" />
-              <path android:fillColor="#FFB6C8" android:pathData="M36.5,63 a3.5,3 0 1,0 7,0 a3.5,3 0 1,0 -7,0 Z" />
-              <path android:fillColor="#FFB6C8" android:pathData="M64.5,63 a3.5,3 0 1,0 7,0 a3.5,3 0 1,0 -7,0 Z" />
-              <path android:fillColor="#5A2A3A" android:pathData="M42,56 a3,3.5 0 1,0 6,0 a3,3.5 0 1,0 -6,0 Z" />
-              <path android:fillColor="#5A2A3A" android:pathData="M60,56 a3,3.5 0 1,0 6,0 a3,3.5 0 1,0 -6,0 Z" />
-              <path android:fillColor="#FFFFFF" android:pathData="M44,54.5 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0 Z" />
-              <path android:fillColor="#FFFFFF" android:pathData="M62,54.5 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0 Z" />
-              <path android:fillColor="#FF5C8A" android:pathData="M51.5,62 L56.5,62 L54,65 Z" />
-              <path android:strokeColor="#5A2A3A" android:strokeWidth="1.2" android:strokeLineCap="round" android:pathData="M54,65 Q51,69 48,67 M54,65 Q57,69 60,67" />
-              <path android:strokeColor="#FF8FAB" android:strokeWidth="1" android:strokeLineCap="round" android:pathData="M30,60 L40,62 M30,66 L40,65 M78,60 L68,62 M78,66 L68,65" />
-          </vector>
-          EOF
-
-          cat > app/src/main/res/drawable/widget_bg.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <shape xmlns:android="http://schemas.android.com/apk/res/android"
-              android:shape="rectangle">
-              <solid android:color="#FFE4EC" />
-              <corners android:radius="28dp" />
-              <stroke android:width="2dp" android:color="#FFB6C8" />
-          </shape>
-          EOF
-
-          cat > app/src/main/res/layout/widget_kitten.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@drawable/widget_bg"
-              android:gravity="center"
-              android:orientation="vertical"
-              android:padding="12dp">
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="🐱"
-                  android:textSize="28sp" />
-              <TextClock
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:format12Hour="hh:mm a"
-                  android:format24Hour="HH:mm"
-                  android:textColor="#D81B60"
-                  android:textSize="40sp"
-                  android:textStyle="bold" />
-              <TextClock
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:format12Hour="EEE, d MMM"
-                  android:format24Hour="EEE, d MMM"
-                  android:textColor="#AD1457"
-                  android:textSize="16sp" />
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="Meow! Have a purr-fect day 🐾"
-                  android:textColor="#C2185B"
-                  android:textSize="12sp" />
-          </LinearLayout>
-          EOF
-
-          cat > app/src/main/res/xml/kitten_widget_info.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-              android:initialLayout="@layout/widget_kitten"
-              android:minWidth="250dp"
-              android:minHeight="110dp"
-              android:resizeMode="horizontal|vertical"
-              android:updatePeriodMillis="0"
-              android:widgetCategory="home_screen" />
-          EOF
-
-          cat > app/src/main/java/com/kitten/widget/KittenWidgetProvider.kt <<'EOF'
-          package com.kitten.widget
-
-          import android.appwidget.AppWidgetManager
-          import android.appwidget.AppWidgetProvider
-          import android.content.Context
-          import android.widget.RemoteViews
-
-          class KittenWidgetProvider : AppWidgetProvider() {
-              override fun onUpdate(
-                  context: Context,
-                  appWidgetManager: AppWidgetManager,
-                  appWidgetIds: IntArray
-              ) {
-                  for (id in appWidgetIds) {
-                      val views = RemoteViews(context.packageName, R.layout.widget_kitten)
-                      appWidgetManager.updateAppWidget(id, views)
-                  }
-              }
-          }
-          EOF
-
-          cat > app/src/main/java/com/kitten/widget/MainActivity.kt <<'EOF'
-          package com.kitten.widget
-
-          import android.app.Activity
-          import android.graphics.Color
-          import android.os.Bundle
-          import android.view.Gravity
-          import android.widget.TextView
-
-          class MainActivity : Activity() {
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  val tv = TextView(this)
-                  tv.text = "🐱 Kitten Widget\n\nHome screen par khaali jagah long-press karo → Widgets → Kitten Widget"
-                  tv.textSize = 20f
-                  tv.gravity = Gravity.CENTER
-                  tv.setTextColor(Color.parseColor("#D81B60"))
-                  tv.setBackgroundColor(Color.parseColor("#FFE4EC"))
-                  tv.setPadding(48, 48, 48, 48)
-                  setContentView(tv)
-              }
-          }
-          EOF
-      - run: gradle assembleDebug
-      - uses: actions/upload-artifact@v4
-        with:
-          name: KittenWidget-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
